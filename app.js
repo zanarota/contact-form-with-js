@@ -26,27 +26,37 @@ class FormSubmit {
     return formObject;
   }
 
-  onSubmission(event) {
-    event.preventDefault();
-    event.target.disabled = true;
-    event.target.innerText = "Enviando...";
+  validateForm() {
+    if (this.form.checkValidity()) {
+      return true;
+    } else {
+      this.form.reportValidity();
+      return false;
+    }
   }
 
   async sendForm(event) {
-    try {
-      this.onSubmission(event);
-      await fetch(this.url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(this.getFormObject()),
-      });
-      this.displaySuccess();
-    } catch (error) {
-      this.displayError();
-      throw new Error(error);
+    event.preventDefault();
+    if (this.validateForm()) {
+      this.formButton.disabled = true;
+      this.formButton.innerText = "Enviando...";
+      try {
+        await fetch(this.url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json"
+          },
+          body: JSON.stringify(this.getFormObject())
+        });
+        this.displaySuccess();
+      } catch (error) {
+        this.displayError();
+        throw new Error(error);
+      } finally {
+        this.formButton.disabled = false;
+        this.formButton.innerText = "Enviar";
+      }
     }
   }
 
@@ -60,6 +70,6 @@ const formSubmit = new FormSubmit({
   form: "[data-form]",
   button: "[data-button]",
   success: "<h1 class='success'>Mensagem enviada!</h1>",
-  error: "<h1 class='error'>Não foi possível enviar sua mensagem.</h1>",
+  error: "<h1 class='error'>Não foi possível enviar sua mensagem.</h1>"
 });
 formSubmit.init();
